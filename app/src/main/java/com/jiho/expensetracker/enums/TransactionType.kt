@@ -14,10 +14,4 @@ enum class TransactionType(val code: String) {
     TRANSPORTATION("Transportation"),
     SHOPPING("Shopping"),
     INVESTMENT("Investment");
-
-    companion object {
-        fun fromCode(code: String): TransactionType? {
-            return entries.firstOrNull { Objects.equals(it.code,code) }
-        }
-    }
 }
