@@ -1,5 +1,7 @@
 package com.jiho.expensetracker.enums
 
+import java.util.Objects
+
 enum class TransactionType(val code: String) {
     OUTSIDE_FOOD("Outside Food and Drinks"),
     ELECTRONICS("Electronic Gadgets"),
@@ -11,5 +13,11 @@ enum class TransactionType(val code: String) {
     PAYMENTS("Payments"),
     TRANSPORTATION("Transportation"),
     SHOPPING("Shopping"),
-    INVESTMENT("Investment")
+    INVESTMENT("Investment");
+
+    companion object {
+        fun fromCode(code: String): TransactionType? {
+            return entries.firstOrNull { Objects.equals(it.code,code) }
+        }
+    }
 }

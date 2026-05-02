@@ -8,10 +8,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +40,7 @@ import com.jiho.expensetracker.enums.TransactionType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Objects
 
 @Composable
 fun AddExpenseDialog(
@@ -47,11 +52,10 @@ fun AddExpenseDialog(
     var amount by remember { mutableStateOf("") }
 
     val datePickerState = rememberDatePickerState()
-    var date = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+    val date = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
 
     var description by remember { mutableStateOf("") }
-//    var transactionType by remember { mutableStateOf("") }
-    var transactionType = TransactionType.OUTSIDE_FOOD
+    var transactionType by remember { mutableStateOf<TransactionType?>(null) }
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -60,14 +64,20 @@ fun AddExpenseDialog(
                 if (listOf(
                         title,
                         amount,
-                        transactionType.toString(),
+                        transactionType,
                         description
-                    ).any { it.isBlank() }
+                    ).any {
+                        if (it is String){
+                            it.isBlank()
+                        } else{
+                            Objects.isNull(it)
+                        }
+                    }
                 ) {
                     alert()
                     return@Button
                 }
-                onAdd(title, amount, date, TransactionType.OUTSIDE_FOOD, description)
+                onAdd(title, amount, date, transactionType!!, description)
                 onDismiss()
             }) {
                 Text("Add")
@@ -98,9 +108,9 @@ fun AddExpenseDialog(
                     "Description"
                 )
 
-                //todo to add and transaction type dropdown
+                ShowDropDownMenu(onMenuSelected = {transactionType = it})
 
-                DateSelect(datePickerState, date)
+                ShowDatePicker(datePickerState, date)
             }
         }
     )
@@ -122,7 +132,59 @@ fun CreateTextFieldWithValue(
 }
 
 @Composable
-fun DateSelect(datePickerState: DatePickerState, selectedDate: Long) {
+fun ShowDropDownMenu(onMenuSelected: (TransactionType?)->Unit){
+    var selectedType by remember { mutableStateOf<TransactionType?>(null) }
+    var showDropDown by remember {mutableStateOf(false)}
+
+    Box(
+        contentAlignment = Alignment.TopStart
+    ){
+        OutlinedTextField(
+            value = selectedType?.code ?: "",
+            onValueChange = {onMenuSelected(selectedType)},
+            label = {Text("Transaction Type")},
+            readOnly = true,
+            trailingIcon = {
+                IconButton(
+                    onClick = {showDropDown = !showDropDown}
+                ) {
+                    Icon(Icons.Filled.Menu, contentDescription = "Transaction Type List")
+                }
+            }
+        )
+
+        if (showDropDown){
+            DropdownMenu(
+                expanded = showDropDown,
+                onDismissRequest = {showDropDown=false},
+            ) {
+                TransactionType.entries.forEach{type->
+                    CreateDropDownMenuItem(
+                        type,
+                        onItemSelected = {
+                            showDropDown=false
+                            selectedType = it
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CreateDropDownMenuItem(transactionType: TransactionType, onItemSelected: (TransactionType)->Unit){
+    DropdownMenuItem(
+        text = { Text(transactionType.code) },
+        onClick = { onItemSelected(transactionType) },
+    )
+}
+
+/**
+ * Returns the selected date by assigning the date in millis to the argument selectedDate
+ */
+@Composable
+fun ShowDatePicker(datePickerState: DatePickerState, selectedDate: Long) {
     var showDatePicker by remember { mutableStateOf(false) }
 
     Box(
