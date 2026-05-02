@@ -51,7 +51,10 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
             )
             LazyColumn (modifier = Modifier.fillMaxWidth()) {
                 items(expenses) { exp ->
-                    ExpenseItem(expense = exp, onDelete = { viewModel.deleteExpense(exp) })
+                    ExpenseItem(expense = exp, onDelete = {
+                        //todo add another alert box, confirm delete
+                        viewModel.deleteExpense(exp)
+                    })
                 }
             }
         }

@@ -40,7 +40,6 @@ import com.jiho.expensetracker.enums.TransactionType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.Objects
 
 @Composable
 fun AddExpenseDialog(
@@ -61,18 +60,11 @@ fun AddExpenseDialog(
         onDismissRequest = { onDismiss() },
         confirmButton = {
             Button(onClick = {
-                if (listOf(
-                        title,
-                        amount,
-                        transactionType,
-                        description
-                    ).any {
-                        if (it is String){
-                            it.isBlank()
-                        } else{
-                            Objects.isNull(it)
-                        }
-                    }
+                if (
+                    title.isBlank() ||
+                    amount.isBlank() ||
+                    description.isBlank() ||
+                    transactionType == null
                 ) {
                     alert()
                     return@Button
@@ -95,7 +87,7 @@ fun AddExpenseDialog(
                 CreateTextFieldWithValue(
                     amount,
                     onValueChange = {
-                        if (it.all { it.isDigit() }) {
+                        if (it.isEmpty() || it.all { ch -> ch.isDigit() }) {
                             amount = it
                         }
                     }, "Amount",
@@ -141,7 +133,7 @@ fun ShowDropDownMenu(onMenuSelected: (TransactionType?)->Unit){
     ){
         OutlinedTextField(
             value = selectedType?.code ?: "",
-            onValueChange = {onMenuSelected(selectedType)},
+            onValueChange = {},
             label = {Text("Transaction Type")},
             readOnly = true,
             trailingIcon = {
@@ -164,6 +156,7 @@ fun ShowDropDownMenu(onMenuSelected: (TransactionType?)->Unit){
                         onItemSelected = {
                             showDropDown=false
                             selectedType = it
+                            onMenuSelected(it)
                         }
                     )
                 }
@@ -176,7 +169,7 @@ fun ShowDropDownMenu(onMenuSelected: (TransactionType?)->Unit){
 fun CreateDropDownMenuItem(transactionType: TransactionType, onItemSelected: (TransactionType)->Unit){
     DropdownMenuItem(
         text = { Text(transactionType.code) },
-        onClick = { onItemSelected(transactionType) },
+        onClick = { onItemSelected(transactionType)},
     )
 }
 
